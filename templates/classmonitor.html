@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Time Record</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="classmonitor">
+    <div class="navbar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+            <a href="#"><b>IDAScan</b></a>
+        </div>
+        <div class="links">
+            <a href="#">Profile</a>
+            <a href="{{ url_for('homepage') }}" class="right">Log-out</a>
+        </div>
+    </div>
+    <h2>Daily Time Record</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash-message {{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="filter-container">
+        <label for="dateFilter"><font color="white">Filter by Date:</font></label>
+        <input type="date" id="dateFilter" aria-label="Filter by Date" onchange="filterClassMonitorRecords()">
+    </div>
+
+    <div class="table-container">
+        <table role="table">
+            <thead>
+                <tr>
+                    <th role="columnheader">Date</th>
+                    <th role="columnheader">Time</th>
+                    <th role="columnheader">Student ID</th>
+                    <th role="columnheader">Name</th>
+                    <th role="columnheader">Remarks</th>
+                </tr>
+            </thead>
+            <tbody id="recordTable" role="rowgroup">
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

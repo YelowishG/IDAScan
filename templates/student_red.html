@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Summary</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="student" data-user-id="{{ user_id }}">
+    <div class="navbar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+            <a href="{{ url_for('homepage') }}"><b>IDAScan</b></a>
+        </div>
+        <div class="links">
+            <a href="{{ url_for('student_dashboard', id_number=user_id) }}">Dashboard</a>
+            <a href="#">Profile</a>
+            <a href="{{ url_for('homepage') }}" class="right">Log-out</a>
+        </div>
+    </div>
+
+    <h2>Attendance Summary</h2>
+
+    <div class="summary-container">
+        <div class="attendances-container">
+            <div class="attendances-item">Total Attendances<br><br>
+                <span id="totalAttendances">{{ attendance['total_attendances'] }}</span> 
+            </div>
+        </div>
+        <div class="absences-container">
+            <div class="absences-item">Total Absences<br><br>
+                <span id="totalAbsences">{{ attendance['total_absences'] }}</span>
+            </div>
+        </div>
+        <div class="schooldays-container">
+            <div class="schooldays-item">Number of School Days<br><br>
+                <span id="totalSchoolDays">{{ attendance['total_school_days'] }}</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>

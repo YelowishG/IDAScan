@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDAScan - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+            <a href="{{ url_for('homepage') }}"><b>IDAScan</b></a>
+        </div>
+        <a href="#" class="right">About</a>
+    </div>
+            
+    <div class="container">
+        <div class="login-container">
+            <img src="{{ url_for('static', filename='IDAScan.png') }}" alt="Upload" width="200">
+            <input type="file" id="fileUpload" style="display: none;">
+            <h3>Sign in to continue</h3>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                            <div class="flash-message {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form action="{{ url_for('login') }}" method="POST">
+                <label for="category">Category:</label>
+                <select id="category" name="category" required>
+                    <option value="student">Student</option>
+                    <option value="monitor">Class Monitor</option>
+                    <option value="teacher">Teacher</option>
+                </select>
+                
+                <label for="id_number">ID Number:</label>
+                <input type="text" id="id_number" name="id_number" placeholder="Enter your ID number" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                
+                <button type="submit">Login</button>
+            </form>
+            
+            <p>
+                <font size="2">Don't have an account? <a href="{{ url_for('register') }}">Register here</a></font>
+            </p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+</body>
+</html>
