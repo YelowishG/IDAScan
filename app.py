@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 import mysql.connector
 from mysql.connector import Error
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash, safe_str_cmp
 from datetime import datetime, time, timedelta
 
 app = Flask(__name__)
@@ -36,7 +36,7 @@ def register():
         section = request.form['section']
         category = request.form['category']
         id_number = request.form['id_number']
-        password = generate_password_hash(request.form['password'])  # Hash the password
+        password = generate_password_hash(request.form['password'], method='sha256')  # Specify algorithm
 
         db = get_db_connection()
         if db:
@@ -182,8 +182,6 @@ def fetch_records():
         return jsonify(records)
     else:
         return jsonify({'error': 'Database connection failed.'})
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
