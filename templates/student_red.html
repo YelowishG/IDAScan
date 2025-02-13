@@ -10,7 +10,6 @@
     <div class="navbar">
         <div class="logo">
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
-            <a href="{{ url_for('homepage') }}"><b>IDAScan</b></a>
         </div>
         <div class="links">
             <a href="{{ url_for('student_dashboard', id_number=user_id) }}">Dashboard</a>
