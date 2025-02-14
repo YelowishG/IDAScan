@@ -29,9 +29,10 @@ def homepage():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        firstname = request.form['firstname']
-        lastname = request.form['lastname']
-        middlename = request.form['middlename']
+        firstname = request.form['firstname'].upper()
+        lastname = request.form['lastname'].upper()
+        middlename = request.form['middlename'].upper()
+        name = f"{firstname} {middlename[0]}. {lastname}"  # Combine name fields in the required format
         birthday = request.form['birthday']
         section = request.form['section']
         category = request.form['category']
@@ -45,6 +46,10 @@ def register():
                 cursor.execute(
                     "INSERT INTO website_users (firstname, lastname, middlename, section, category, id_number, password) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                     (firstname, lastname, middlename, section, category, id_number, password)
+                )
+                cursor.execute(
+                    "INSERT INTO users (id_number, name, role) VALUES (%s, %s, %s)",
+                    (id_number, name, category)
                 )
                 db.commit()
                 cursor.close()
