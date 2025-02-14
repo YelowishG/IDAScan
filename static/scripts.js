@@ -21,9 +21,9 @@ function displayClassMonitorRecords(data) {
         console.log('Record:', record);  // Log each record
         const row = `<tr>
                         <td>${record.date}</td>
-                        <td>${record.time || ''}</td>
+                        <td>${record.time_in || ''}</td>
                         <td>${record.id_number}</td>
-                        <td>${record.name}</td>
+                        <td>${record.name || ''}</td>
                         <td>${record.remarks || ''}</td>
                     </tr>`;
         tableBody.innerHTML += row;
@@ -36,17 +36,6 @@ function filterClassMonitorRecords() {
     console.log('Filtered data:', filteredRecords);  // Log filtered data
     displayClassMonitorRecords(filteredRecords);
 }
-
-// Initialize functions
-window.onload = function() {
-    const bodyClass = document.body.classList;
-    if (bodyClass.contains('classmonitor')) {
-        fetchClassMonitorRecords();
-    }
-};
-
-
-
 
 // Fetch records for Student
 async function fetchStudentRecords(userId) {
@@ -69,26 +58,20 @@ function displayStudentRecords(data) {
         console.log('Record:', record);  // Log each record
         const row = `<tr>
                         <td>${record.date}</td>
-                        <td>${record.time}</td>
+                        <td>${record.time_in || ''}</td>
                         <td>${record.id_number}</td>
-                        <td>${record.name}</td>
-                        <td>${record.remarks}</td>
+                        <td>${record.time_out || ''}</td>
                     </tr>`;
         tableBody.innerHTML += row;
     });
 
     // Display attendance summary
-    const totalSchoolDays = 180;  // Example: 180 school days in a year
-    const attendances = data.filter(record => record.time_in).length;
-    const absences = totalSchoolDays - attendances;
+    const totalAttendances = data.filter(record => record.time_in).length;
+    const totalAbsences = data.filter(record => !record.time_in).length;
+    const totalSchoolDays = totalAttendances + totalAbsences;
     document.getElementById("totalSchoolDays").textContent = totalSchoolDays;
-    document.getElementById("totalAttendances").textContent = attendances;
-    document.getElementById("totalAbsences").textContent = absences;
-}
-
-function logout() {
-    alert("You have been logged out.");
-    window.location.href = "home-page-login.html";
+    document.getElementById("totalAttendances").textContent = totalAttendances;
+    document.getElementById("totalAbsences").textContent = totalAbsences;
 }
 
 // Initialize functions
