@@ -101,58 +101,42 @@ def student_dashboard(id_number):
     db = get_db_connection()
     if db:
         cursor = db.cursor(dictionary=True)
-        
-        # Debugging Statements
-        print(f"Fetching attendance summary for ID Number: {id_number}")
-        
         cursor.execute("SELECT COUNT(*) AS total_attendances FROM dtr WHERE id_number = %s", (id_number,))
         total_attendances = cursor.fetchone()['total_attendances']
-        print(f"Total Attendances: {total_attendances}")
-
         cursor.execute("SELECT COUNT(*) AS total_absences FROM dtr WHERE id_number = %s AND time_in IS NULL", (id_number,))
         total_absences = cursor.fetchone()['total_absences']
-        print(f"Total Absences: {total_absences}")
-
         cursor.execute("SELECT COUNT(DISTINCT date) AS total_school_days FROM dtr WHERE id_number = %s", (id_number,))
         total_school_days = cursor.fetchone()['total_school_days']
-        print(f"Total School Days: {total_school_days}")
-
         cursor.close()
         db.close()
-
         attendance = {
             'total_attendances': total_attendances,
             'total_absences': total_absences,
             'total_school_days': total_school_days
         }
-
         return render_template('student_red.html', user_id=id_number, attendance=attendance)
     else:
         flash('Database connection failed. Please try again later.', 'danger')
         return redirect(url_for('homepage'))
 
-
-@app.route('/fetch_student_records/<id_number>')
-def fetch_student_records(id_number):
+@app.route('/fetch_student_records/<user_id>')
+def fetch_student_records(user_id):
     db = get_db_connection()
     if db:
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT date, time_in, time_out FROM dtr WHERE id_number = %s", (id_number,))
+        cursor.execute("SELECT id_number, date, time_in, time_out FROM dtr WHERE id_number = %s", (user_id,))
         records = cursor.fetchall()
-
         for record in records:
             record['date'] = record['date'].strftime("%Y-%m-%d")
             if record['time_in']:
-                record['time_in'] = str(record['time_in'])
+                record['time_in'] = record['time_in'].strftime('%H:%M:%S')
             if record['time_out']:
-                record['time_out'] = str(record['time_out'])
-        
+                record['time_out'] = record['time_out'].strftime('%H:%M:%S')
         cursor.close()
         db.close()
         return jsonify(records)
     else:
         return jsonify({'error': 'Database connection failed.'})
-
 
 @app.route('/fetch_records')
 def fetch_records():
