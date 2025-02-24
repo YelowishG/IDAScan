@@ -173,7 +173,7 @@ def fetch_records():
             record['date'] = record['date'].strftime('%Y-%m-%d')
             
             # Add "late" to remarks if time_in is after 08:00:00
-            if datetime.strptime(record['time_in'], '%H:%M:%S') > datetime.strptime('08:00:00', '%H:%M:%S'):
+            if datetime.strptime(record['time_in'], '%H:%M:%S') > datetime.strptime('07:40:00', '%H:%M:%S'):
                 record['remarks'] = 'late'
             else:
                 record['remarks'] = ''
