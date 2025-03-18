@@ -11,10 +11,10 @@ app.secret_key = 'your_secret_key'  # Needed for flash messages
 def get_db_connection():
     try:
         connection = mysql.connector.connect(
-            host="sql12.freesqldatabase.com",
-            user="sql12762297",
-            password="52gVNadWvI",
-            database="sql12762297",
+            host="sql106.infinityfree.com",
+            user="if0_38547424",
+            password="yellow063006",
+            database="if0_38547424_idascan",
         )
         if connection.is_connected():
             return connection
