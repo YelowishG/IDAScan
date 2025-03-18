@@ -8,27 +8,20 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for flash messages
 
 # Database connection function
-import mysql.connector
-
-try:
-    connection = mysql.connector.connect(
-        host="sql106.infinityfree.com",
-        port=3306,
-        user="if0_38547424",
-        password="yellow063006",
-        database="if0_38547424_idascan"
-    )
-    if connection.is_connected():
-        print("Connected to MySQL database!")
-        cursor = connection.cursor()
-        cursor.execute("SELECT VERSION()")
-        version = cursor.fetchone()
-        print(f"MySQL server version: {version[0]}")
-        cursor.close()
-        connection.close()
-        print("MySQL connection closed")
-except mysql.connector.Error as e:
-    print(f"Error connecting to MySQL: {e}")
+def get_db_connection():
+    try:
+        connection = mysql.connector.connect(
+            host="sql106.infinityfree.com",
+            port=3306,  # Explicitly specify the port
+            user="if0_38547424",
+            password="yellow063006",
+            database="if0_38547424_idascan",
+        )
+        if connection.is_connected():
+            return connection
+    except Error as e:
+        print(f"Error connecting to MySQL: {e}")
+    return None
 
 @app.route('/')
 def homepage():
