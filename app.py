@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, f
 import psycopg2
 from psycopg2 import Error
 from psycopg2.extras import DictCursor
-from werkzeug.security import generate_password_hash, check_password_hash, safe_str_cmp
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, time, timedelta
 import os
 
