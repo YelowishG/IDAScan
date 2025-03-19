@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, session
 import psycopg2
 from psycopg2 import Error
 from psycopg2.extras import DictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, time, timedelta
 import os
+from functools import wraps
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Needed for flash messages
+app.secret_key = 'your_secret_key'  # Needed for flash messages and sessions
 
 # Database connection function
 def get_db_connection():
@@ -32,6 +33,28 @@ def get_db_connection():
     except Error as e:
         print(f"Error connecting to PostgreSQL: {e}")
     return None
+
+# Authentication decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'danger')
+            return redirect(url_for('homepage'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Role-based access control decorator
+def role_required(allowed_roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'user_role' not in session or session['user_role'] not in allowed_roles:
+                flash('Access denied: You do not have permission to access this page.', 'danger')
+                return redirect(url_for('homepage'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 @app.route('/')
 def homepage():
@@ -95,7 +118,12 @@ def login():
             
             cursor.close()
             if user and check_password_hash(user['password'], password):  # Verify hashed password
-                # Fix: Add support for 'monitor' category
+                # Store user information in session
+                session['user_id'] = user['id']
+                session['user_role'] = category
+                session['user_name'] = user['firstname']
+                
+                # Redirect based on user role
                 if category == 'teacher' or category == 'class_monitor' or category == 'monitor':
                     return redirect(url_for('teacher_classmonitor'))
                 elif category == 'student':
@@ -111,12 +139,27 @@ def login():
         flash('Database connection failed. Please try again later.', 'danger')
         return redirect(url_for('homepage'))
 
+@app.route('/logout')
+def logout():
+    # Clear the session
+    session.clear()
+    flash('You have been logged out successfully.', 'success')
+    return redirect(url_for('homepage'))
+
 @app.route('/teacher_classmonitor')
+@login_required
+@role_required(['teacher', 'class_monitor', 'monitor'])
 def teacher_classmonitor():
     return render_template('classmonitor.html')
 
 @app.route('/student_dashboard/<id_number>')
+@login_required
 def student_dashboard(id_number):
+    # Ensure users can only access their own dashboard
+    if str(session['user_id']) != str(id_number) and session['user_role'] != 'teacher' and session['user_role'] != 'monitor':
+        flash('Access denied: You can only view your own dashboard.', 'danger')
+        return redirect(url_for('homepage'))
+        
     db = get_db_connection()
     if db:
         cursor = db.cursor(cursor_factory=DictCursor)
@@ -139,7 +182,12 @@ def student_dashboard(id_number):
         return redirect(url_for('homepage'))
 
 @app.route('/fetch_student_records/<user_id>')
+@login_required
 def fetch_student_records(user_id):
+    # Ensure users can only access their own records
+    if str(session['user_id']) != str(user_id) and session['user_role'] != 'teacher' and session['user_role'] != 'monitor':
+        return jsonify({'error': 'Access denied'})
+        
     db = get_db_connection()
     if db:
         cursor = db.cursor(cursor_factory=DictCursor)
@@ -165,6 +213,8 @@ def fetch_student_records(user_id):
         return jsonify({'error': 'Database connection failed.'})
 
 @app.route('/fetch_records')
+@login_required
+@role_required(['teacher', 'class_monitor', 'monitor'])
 def fetch_records():
     db = get_db_connection()
     if db:
