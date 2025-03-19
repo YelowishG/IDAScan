@@ -162,21 +162,62 @@ def student_dashboard(id_number):
         
     db = get_db_connection()
     if db:
-        cursor = db.cursor(cursor_factory=DictCursor)
-        cursor.execute("SELECT COUNT(*) AS total_attendances FROM dtr WHERE id_number = %s", (id_number,))
-        total_attendances = cursor.fetchone()['total_attendances']
-        cursor.execute("SELECT COUNT(*) AS total_absences FROM dtr WHERE id_number = %s AND time_in IS NULL", (id_number,))
-        total_absences = cursor.fetchone()['total_absences']
-        cursor.execute("SELECT COUNT(DISTINCT date) AS total_school_days FROM dtr WHERE id_number = %s", (id_number,))
-        total_school_days = cursor.fetchone()['total_school_days']
-        cursor.close()
-        db.close()
-        attendance = {
-            'total_attendances': total_attendances,
-            'total_absences': total_absences,
-            'total_school_days': total_school_days
-        }
-        return render_template('student_red.html', user_id=id_number, attendance=attendance)
+        try:
+            cursor = db.cursor(cursor_factory=DictCursor)
+            
+            # Get the student's name
+            cursor.execute("SELECT name FROM users WHERE id_number = %s", (id_number,))
+            user_data = cursor.fetchone()
+            user_name = user_data['name'] if user_data else "Student"
+            
+            # Count attendances (days where time_in is not null)
+            cursor.execute("""
+                SELECT COUNT(*) AS total_attendances 
+                FROM dtr 
+                WHERE id_number = %s AND time_in IS NOT NULL
+            """, (id_number,))
+            total_attendances = cursor.fetchone()['total_attendances']
+            
+            # Count absences (days where time_in is null)
+            cursor.execute("""
+                SELECT COUNT(*) AS total_absences 
+                FROM dtr 
+                WHERE id_number = %s AND time_in IS NULL
+            """, (id_number,))
+            total_absences = cursor.fetchone()['total_absences']
+            
+            # Count total school days
+            cursor.execute("""
+                SELECT COUNT(DISTINCT date) AS total_school_days 
+                FROM dtr 
+                WHERE id_number = %s
+            """, (id_number,))
+            total_school_days = cursor.fetchone()['total_school_days']
+            
+            # Count late days (time_in after 07:40:00)
+            cursor.execute("""
+                SELECT COUNT(*) AS total_late 
+                FROM dtr 
+                WHERE id_number = %s AND time_in > '07:40:00'
+            """, (id_number,))
+            total_late = cursor.fetchone()['total_late']
+            
+            attendance = {
+                'total_attendances': total_attendances,
+                'total_absences': total_absences,
+                'total_school_days': total_school_days,
+                'total_late': total_late,
+                'user_name': user_name
+            }
+            
+            return render_template('student_red.html', user_id=id_number, attendance=attendance)
+            
+        except Exception as e:
+            print(f"Error in student dashboard: {e}")
+            flash(f'Error retrieving attendance data: {str(e)}', 'danger')
+            return redirect(url_for('homepage'))
+        finally:
+            db.close()
     else:
         flash('Database connection failed. Please try again later.', 'danger')
         return redirect(url_for('homepage'))
@@ -190,25 +231,38 @@ def fetch_student_records(user_id):
         
     db = get_db_connection()
     if db:
-        cursor = db.cursor(cursor_factory=DictCursor)
-        cursor.execute("SELECT id_number, date, time_in, time_out FROM dtr WHERE id_number = %s", (user_id,))
-        records = cursor.fetchall()
-        
-        # Convert records to a list of dictionaries
-        result = []
-        for record in records:
-            # Convert date and time objects to strings
-            record_dict = dict(record)
-            record_dict['date'] = record_dict['date'].strftime("%Y-%m-%d")
-            if record_dict['time_in']:
-                record_dict['time_in'] = record_dict['time_in'].strftime('%H:%M:%S')
-            if record_dict['time_out']:
-                record_dict['time_out'] = record_dict['time_out'].strftime('%H:%M:%S')
-            result.append(record_dict)
+        try:
+            cursor = db.cursor(cursor_factory=DictCursor)
             
-        cursor.close()
-        db.close()
-        return jsonify(result)
+            # Get all attendance records for this student
+            cursor.execute("""
+                SELECT id_number, date, time_in, time_out 
+                FROM dtr 
+                WHERE id_number = %s
+                ORDER BY date DESC
+            """, (user_id,))
+            
+            records = cursor.fetchall()
+            
+            # Convert records to a list of dictionaries
+            result = []
+            for record in records:
+                # Convert date and time objects to strings
+                record_dict = dict(record)
+                record_dict['date'] = record_dict['date'].strftime("%Y-%m-%d")
+                if record_dict['time_in']:
+                    record_dict['time_in'] = record_dict['time_in'].strftime('%H:%M:%S')
+                if record_dict['time_out']:
+                    record_dict['time_out'] = record_dict['time_out'].strftime('%H:%M:%S')
+                result.append(record_dict)
+                
+            return jsonify(result)
+            
+        except Exception as e:
+            print(f"Error fetching student records: {e}")
+            return jsonify({'error': f'Database error: {str(e)}'})
+        finally:
+            db.close()
     else:
         return jsonify({'error': 'Database connection failed.'})
 
