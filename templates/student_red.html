@@ -75,20 +75,6 @@
             color: #6c757d;
         }
         
-        /* Record table styles */
-        .record-container {
-            margin: 40px auto;
-            width: 80%;
-            max-width: 1000px;
-        }
-        
-        .record-title {
-            color: white;
-            margin-bottom: 15px;
-            text-align: center;
-            font-size: 24px;
-        }
-        
         /* Flash message styling */
         .flash-messages {
             width: 80%;
@@ -145,119 +131,25 @@
             <div class="stats-icon">✓</div>
             <div class="stats-label">Total Attendances</div>
             <div class="stats-value" id="totalAttendances">{{ attendance['total_attendances'] }}</div>
-            {% if attendance['total_school_days'] > 0 %}
             <div class="attendance-percentage">
-                {{ ((attendance['total_attendances'] / attendance['total_school_days']) * 100) | round(1) }}% Attendance Rate
+                {{ ((attendance['total_attendances'] / 180) * 100) | round(1) }}% Attendance Rate
             </div>
-            {% endif %}
         </div>
         
         <div class="stats-container absences-container">
             <div class="stats-icon">✗</div>
             <div class="stats-label">Total Absences</div>
             <div class="stats-value" id="totalAbsences">{{ attendance['total_absences'] }}</div>
-            {% if attendance['total_school_days'] > 0 %}
             <div class="attendance-percentage">
-                {{ ((attendance['total_absences'] / attendance['total_school_days']) * 100) | round(1) }}% Absence Rate
+                {{ ((attendance['total_absences'] / 180) * 100) | round(1) }}% Absence Rate
             </div>
-            {% endif %}
         </div>
         
         <div class="stats-container schooldays-container">
             <div class="stats-icon">📅</div>
             <div class="stats-label">School Days</div>
-            <div class="stats-value" id="totalSchoolDays">{{ attendance['total_school_days'] }}</div>
+            <div class="stats-value" id="totalSchoolDays">180</div>
         </div>
     </div>
-
-    <div class="record-container">
-        <h3 class="record-title">Recent Attendance Records</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Time In</th>
-                    <th>Time Out</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody id="studentRecordTable">
-                <!-- Data will be loaded via JavaScript -->
-                <tr>
-                    <td colspan="4">Loading records...</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get user ID from data attribute
-            const userId = document.body.getAttribute('data-user-id');
-            
-            // Fetch and display student records
-            fetchStudentRecords(userId);
-        });
-
-        async function fetchStudentRecords(userId) {
-            try {
-                const response = await fetch(`/fetch_student_records/${userId}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const records = await response.json();
-                displayStudentRecords(records);
-            } catch (error) {
-                console.error('Error fetching student records:', error);
-                document.getElementById('studentRecordTable').innerHTML = `
-                    <tr>
-                        <td colspan="4">Error loading records. Please try again later.</td>
-                    </tr>
-                `;
-            }
-        }
-
-        function displayStudentRecords(records) {
-            const tableBody = document.getElementById('studentRecordTable');
-            
-            if (records.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="4">No attendance records found.</td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            // Sort records by date (newest first)
-            records.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            // Display only the 10 most recent records
-            const recentRecords = records.slice(0, 10);
-            
-            tableBody.innerHTML = recentRecords.map(record => {
-                let status = 'Present';
-                
-                // Determine status
-                if (!record.time_in) {
-                    status = 'Absent';
-                } else if (record.time_in && record.time_in > '07:40:00') {
-                    status = 'Late';
-                }
-                
-                // Apply status styling
-                let statusClass = '';
-                if (status === 'Present') statusClass = 'style="color: green;"';
-                if (status === 'Late') statusClass = 'style="color: orange;"';
-                if (status === 'Absent') statusClass = 'style="color: red;"';
-                
-                return `<tr>
-                    <td>${record.date}</td>
-                    <td>${record.time_in || '-'}</td>
-                    <td>${record.time_out || '-'}</td>
-                    <td ${statusClass}>${status}</td>
-                </tr>`;
-            }).join('');
-        }
-    </script>
 </body>
 </html>

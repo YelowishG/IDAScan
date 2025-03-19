@@ -178,6 +178,10 @@ def student_dashboard(id_number):
             """, (id_number,))
             total_attendances = cursor.fetchone()['total_attendances']
             
+            # If there are no records yet, set a default value of 1 for attendance
+            if total_attendances == 0:
+                total_attendances = 1
+            
             # Count absences (days where time_in is null)
             cursor.execute("""
                 SELECT COUNT(*) AS total_absences 
@@ -186,13 +190,8 @@ def student_dashboard(id_number):
             """, (id_number,))
             total_absences = cursor.fetchone()['total_absences']
             
-            # Count total school days
-            cursor.execute("""
-                SELECT COUNT(DISTINCT date) AS total_school_days 
-                FROM dtr 
-                WHERE id_number = %s
-            """, (id_number,))
-            total_school_days = cursor.fetchone()['total_school_days']
+            # Count total school days - we'll set this to a fixed value of 180
+            total_school_days = 180
             
             # Count late days (time_in after 07:40:00)
             cursor.execute("""
