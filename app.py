@@ -95,7 +95,8 @@ def login():
             
             cursor.close()
             if user and check_password_hash(user['password'], password):  # Verify hashed password
-                if category == 'teacher' or category == 'class_monitor':
+                # Fix: Add support for 'monitor' category
+                if category == 'teacher' or category == 'class_monitor' or category == 'monitor':
                     return redirect(url_for('teacher_classmonitor'))
                 elif category == 'student':
                     return redirect(url_for('student_dashboard', id_number=user['id']))
