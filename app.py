@@ -15,7 +15,7 @@ app.secret_key = 'your_secret_key'  # Needed for flash messages and sessions
 def get_db_connection():
     try:
         # Get database connection details from environment variables
-        DATABASE_URL = os.environ.get('postgresql://neondb_owner:npg_n5jQ6TrPGSiY@ep-ancient-butterfly-a433lly4-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require')
+        DATABASE_URL = os.environ.get('DATABASE_URL')
         
         # If DATABASE_URL is provided, use it directly
         if DATABASE_URL:
