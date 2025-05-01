@@ -19,8 +19,8 @@ def get_db_connection():
         
         # If DATABASE_URL is provided, use it directly
         if DATABASE_URL:
-            # For Neon.tech, you might need to add SSL mode
-            connection = psycopg2.connect(f"{DATABASE_URL}?sslmode=require")
+            # For Neon.tech, parse the connection string correctly
+            connection = psycopg2.connect(DATABASE_URL)
         else:
             # Your existing fallback logic
             connection = psycopg2.connect(
