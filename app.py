@@ -11,19 +11,21 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for flash messages and sessions
 
 # Database connection function
+# In app.py, update your get_db_connection function
 def get_db_connection():
     try:
         # Get database connection details from environment variables
-        DATABASE_URL = os.environ.get('DATABASE_URL')
+        DATABASE_URL = os.environ.get('postgresql://neondb_owner:npg_n5jQ6TrPGSiY@ep-ancient-butterfly-a433lly4-pooler.us-east-1.aws.neon.tech/neondb?sslmode=require')
         
         # If DATABASE_URL is provided, use it directly
         if DATABASE_URL:
-            connection = psycopg2.connect(DATABASE_URL)
+            # For Neon.tech, you might need to add SSL mode
+            connection = psycopg2.connect(f"{DATABASE_URL}?sslmode=require")
         else:
-            # Otherwise, use individual parameters
+            # Your existing fallback logic
             connection = psycopg2.connect(
                 host=os.environ.get('DB_HOST'),
-                port=os.environ.get('DB_PORT', 5432),  # Default PostgreSQL port
+                port=os.environ.get('DB_PORT', 5432),
                 user=os.environ.get('DB_USER'),
                 password=os.environ.get('DB_PASSWORD'),
                 database=os.environ.get('DB_NAME')
